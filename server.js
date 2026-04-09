@@ -6,6 +6,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { scanConfiguration, calculateRiskScore, summarizeFindings } = require("./scanner");
 const { findUser, createUser, addScanHistory, getScanHistory } = require("./db");
+const { scanAwsAccount } = require("./awsScanner");
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -171,6 +172,59 @@ async function handleApi(req, res) {
             summary,
             findings
         });
+        return;
+    }
+
+    if (req.method === "POST" && req.url === "/api/aws/live-scan") {
+        const session = requireSession(req, res);
+        if (!session) {
+            return;
+        }
+
+        const body = await readJsonBody(req);
+        const region = String(body.region || "ap-south-1").trim();
+
+        try {
+            const awsResult = await scanAwsAccount({
+                region,
+                accessKeyId: body.accessKeyId,
+                secretAccessKey: body.secretAccessKey,
+                sessionToken: body.sessionToken
+            });
+
+            const riskScore = calculateRiskScore(awsResult.findings);
+            const summary = summarizeFindings(awsResult.findings);
+            const fileName = `AWS live scan (${awsResult.accountId})`;
+
+            addScanHistory({
+                username: session.username,
+                fileName,
+                cloud: "AWS",
+                riskScore,
+                summary,
+                findingsCount: awsResult.findings.filter(item => item.severity !== "Safe").length,
+                scannedAt: new Date().toISOString()
+            });
+
+            sendJson(res, 200, {
+                fileName,
+                cloud: "AWS",
+                riskScore,
+                summary,
+                findings: awsResult.findings,
+                metadata: {
+                    accountId: awsResult.accountId,
+                    arn: awsResult.arn,
+                    userId: awsResult.userId,
+                    region: awsResult.region,
+                    liveScan: true
+                }
+            });
+        } catch (error) {
+            sendJson(res, 400, {
+                error: error.message || "AWS live scan failed"
+            });
+        }
         return;
     }
 

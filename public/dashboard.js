@@ -4,6 +4,7 @@ const USER_KEY = "cloud_scanner_user";
 let lastFindings = [];
 let lastCloud = "AWS";
 let lastFileName = "sample.yaml";
+let lastMetadata = null;
 let chartInstance;
 
 const sampleConfig = {
@@ -51,6 +52,7 @@ async function boot() {
 function bindEvents() {
     document.getElementById("scanBtn").addEventListener("click", handleScan);
     document.getElementById("sampleBtn").addEventListener("click", handleSampleScan);
+    document.getElementById("awsLiveScanBtn").addEventListener("click", handleAwsLiveScan);
     document.getElementById("logoutBtn").addEventListener("click", logout);
     document.getElementById("pdfBtn").addEventListener("click", downloadPDF);
     document.getElementById("jsonBtn").addEventListener("click", exportJSON);
@@ -128,6 +130,44 @@ async function handleSampleScan() {
     await submitScan(sampleConfig, cloud, "sample.yaml");
 }
 
+async function handleAwsLiveScan() {
+    const message = document.getElementById("awsLiveScanMessage");
+    const region = document.getElementById("awsRegion").value.trim() || "ap-south-1";
+    const accessKeyId = document.getElementById("awsAccessKeyId").value.trim();
+    const secretAccessKey = document.getElementById("awsSecretAccessKey").value.trim();
+    const sessionToken = document.getElementById("awsSessionToken").value.trim();
+
+    message.textContent = "Connecting to AWS and collecting live security posture data...";
+
+    try {
+        const result = await apiFetch("/api/aws/live-scan", {
+            method: "POST",
+            body: JSON.stringify({
+                region,
+                accessKeyId,
+                secretAccessKey,
+                sessionToken
+            })
+        });
+
+        lastFindings = result.findings;
+        lastCloud = result.cloud;
+        lastFileName = result.fileName;
+        lastMetadata = result.metadata || null;
+
+        updateSummary(result);
+        updateRecommendations(result.findings);
+        updateComplianceSummary(result.findings);
+        drawChart(result.summary);
+        renderFilteredResults();
+        await loadHistory();
+
+        message.textContent = `Live AWS scan completed for account ${result.metadata?.accountId || "connected account"} in ${result.metadata?.region || region}.`;
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
 function parseConfig(fileName, content) {
     const lower = fileName.toLowerCase();
 
@@ -151,6 +191,7 @@ async function submitScan(config, cloud, fileName) {
     lastFindings = result.findings;
     lastCloud = result.cloud;
     lastFileName = result.fileName;
+    lastMetadata = result.metadata || null;
 
     updateSummary(result);
     updateRecommendations(result.findings);
@@ -164,6 +205,9 @@ function updateSummary(result) {
     const { riskScore, summary, cloud, fileName } = result;
     const hasRealFindings = result.findings.some(item => item.severity !== "Safe");
     const posture = getPostureLabel(riskScore, hasRealFindings);
+    const metaLine = result.metadata?.liveScan
+        ? `Live AWS scan for account ${result.metadata.accountId} (${result.metadata.region}) on ${new Date().toLocaleString()}.`
+        : `Scanned ${fileName} for ${cloud} on ${new Date().toLocaleString()}.`;
 
     document.getElementById("riskHeadline").textContent = posture.headline;
     document.getElementById("riskBadge").textContent = posture.badge;
@@ -174,7 +218,7 @@ function updateSummary(result) {
     document.getElementById("criticalCount").textContent = summary.Critical || 0;
     document.getElementById("highCount").textContent = summary.High || 0;
     document.getElementById("mediumCount").textContent = summary.Medium || 0;
-    document.getElementById("scanMeta").textContent = `Scanned ${fileName} for ${cloud} on ${new Date().toLocaleString()}.`;
+    document.getElementById("scanMeta").textContent = metaLine;
 }
 
 function getPostureLabel(score, hasRealFindings) {
@@ -300,10 +344,25 @@ function getComplianceSummary(findings) {
 
 function drawChart(summary) {
     const canvas = document.getElementById("chart");
+    const emptyState = document.getElementById("chartEmptyState");
+    const total =
+        (summary.Critical || 0) +
+        (summary.High || 0) +
+        (summary.Medium || 0) +
+        (summary.Low || 0);
 
     if (chartInstance) {
         chartInstance.destroy();
     }
+
+    if (total === 0) {
+        canvas.style.display = "none";
+        emptyState.style.display = "flex";
+        return;
+    }
+
+    canvas.style.display = "block";
+    emptyState.style.display = "none";
 
     chartInstance = new Chart(canvas, {
         type: "bar",
@@ -387,10 +446,15 @@ function downloadPDF() {
     doc.text(`Cloud Provider: ${lastCloud}`, 20, 32);
     doc.text(`Configuration File: ${lastFileName}`, 20, 40);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 48);
-    doc.text(`Findings Summary: Critical ${severitySummary.Critical}, High ${severitySummary.High}, Medium ${severitySummary.Medium}, Low ${severitySummary.Low}`, 20, 56);
-    doc.text(`Top Compliance Tags: ${complianceSummary.map(item => `${item.framework} (${item.count})`).join(", ") || "None"}`, 20, 64);
+    const summaryY = lastMetadata?.accountId ? 64 : 56;
+    const complianceY = lastMetadata?.accountId ? 72 : 64;
+    if (lastMetadata?.accountId) {
+        doc.text(`AWS Account: ${lastMetadata.accountId} | Region: ${lastMetadata.region}`, 20, 56);
+    }
+    doc.text(`Findings Summary: Critical ${severitySummary.Critical}, High ${severitySummary.High}, Medium ${severitySummary.Medium}, Low ${severitySummary.Low}`, 20, summaryY);
+    doc.text(`Top Compliance Tags: ${complianceSummary.map(item => `${item.framework} (${item.count})`).join(", ") || "None"}`, 20, complianceY);
 
-    let y = 78;
+    let y = lastMetadata?.accountId ? 86 : 78;
     lastFindings.forEach((finding, index) => {
         const lines = doc.splitTextToSize(
             `${index + 1}. ${finding.issue} | ${finding.severity} | ${finding.category}
@@ -429,6 +493,7 @@ function exportJSON() {
         cloud: lastCloud,
         fileName: lastFileName,
         generatedAt: new Date().toISOString(),
+        metadata: lastMetadata,
         findings: lastFindings
     };
 
@@ -466,7 +531,20 @@ async function apiFetch(url, options = {}) {
         body: options.body
     });
 
-    const data = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const rawText = await response.text();
+    let data = {};
+
+    if (!contentType.includes("application/json")) {
+        throw new Error("The server returned a non-JSON response. Please refresh and try again.");
+    }
+
+    try {
+        data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+        throw new Error("The server returned invalid JSON. Please refresh and try again.");
+    }
+
     if (!response.ok) {
         throw new Error(data.error || "Request failed");
     }

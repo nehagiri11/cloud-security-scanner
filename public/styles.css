@@ -176,6 +176,7 @@ p {
 .demo-box,
 .sample-box,
 .upload-guide,
+.live-scan-card,
 .stat-card,
 .score-card,
 .recommendation-card,
@@ -250,7 +251,8 @@ p {
 }
 
 .layout {
-    grid-template-columns: 1.05fr 1fr;
+    grid-template-columns: minmax(0, 1.18fr) minmax(360px, 0.82fr);
+    align-items: start;
 }
 
 .insight-grid {
@@ -272,6 +274,46 @@ p {
     padding: 24px;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.88));
+}
+
+.controls-panel,
+.summary-panel {
+    height: 100%;
+}
+
+.controls-panel {
+    display: grid;
+    gap: 18px;
+}
+
+.panel-block {
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 250, 255, 0.94));
+    box-shadow: var(--shadow-soft);
+}
+
+.primary-block {
+    background: linear-gradient(180deg, rgba(236, 244, 255, 0.95), rgba(255, 255, 255, 0.98));
+}
+
+.block-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.block-header .section-copy {
+    max-width: 360px;
+}
+
+.support-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
 }
 
 .field {
@@ -356,9 +398,18 @@ button.ghost {
 }
 
 .upload-guide {
-    margin-top: 18px;
     background:
         linear-gradient(180deg, rgba(255, 245, 232, 0.95), rgba(255, 255, 255, 0.98));
+}
+
+.live-scan-card {
+    grid-column: 1 / -1;
+    background:
+        linear-gradient(180deg, rgba(223, 248, 245, 0.92), rgba(255, 255, 255, 0.98));
+}
+
+.compact-row {
+    margin-bottom: 10px;
 }
 
 .guide-tags {
@@ -492,11 +543,22 @@ button.ghost {
 
 .chart-wrap {
     position: relative;
-    min-height: 240px;
+    min-height: 150px;
     padding: 14px;
     border-radius: 18px;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(239, 245, 255, 0.9));
     border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.chart-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 16px;
 }
 
 .filter-bar {
@@ -571,9 +633,11 @@ tbody tr:hover {
     .auth-shell,
     .layout,
     .insight-grid,
+    .support-grid,
     .control-grid,
     .stat-grid,
     .topbar,
+    .block-header,
     .summary-header,
     .results-header,
     .filter-bar,

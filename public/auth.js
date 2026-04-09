@@ -24,9 +24,7 @@ async function validateExistingSession() {
             }
         });
 
-        if (!response.ok) {
-            throw new Error("Session expired");
-        }
+        await parseApiResponse(response, "Session expired");
 
         window.location.href = "/dashboard.html";
     } catch {
@@ -61,10 +59,7 @@ document.getElementById("loginForm").addEventListener("submit", async event => {
             body: JSON.stringify({ username, password })
         });
 
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || "Login failed");
-        }
+        const data = await parseApiResponse(response, "Login failed");
 
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));
@@ -104,10 +99,7 @@ document.getElementById("registerForm").addEventListener("submit", async event =
             body: JSON.stringify({ name, username, password })
         });
 
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || "Registration failed");
-        }
+        const data = await parseApiResponse(response, "Registration failed");
 
         localStorage.setItem(TOKEN_KEY, data.token);
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));
@@ -116,3 +108,25 @@ document.getElementById("registerForm").addEventListener("submit", async event =
         message.textContent = error.message;
     }
 });
+
+async function parseApiResponse(response, fallbackMessage) {
+    const contentType = response.headers.get("content-type") || "";
+    const rawText = await response.text();
+
+    if (!contentType.includes("application/json")) {
+        throw new Error(`${fallbackMessage}. The server returned a non-JSON response.`);
+    }
+
+    let data;
+    try {
+        data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+        throw new Error(`${fallbackMessage}. The server returned invalid JSON.`);
+    }
+
+    if (!response.ok) {
+        throw new Error(data.error || fallbackMessage);
+    }
+
+    return data;
+}
