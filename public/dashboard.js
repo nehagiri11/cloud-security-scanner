@@ -154,6 +154,7 @@ async function submitScan(config, cloud, fileName) {
 
     updateSummary(result);
     updateRecommendations(result.findings);
+    updateComplianceSummary(result.findings);
     drawChart(result.summary);
     renderFilteredResults();
     await loadHistory();
@@ -257,6 +258,46 @@ function updateRecommendations(findings) {
     `).join("");
 }
 
+function updateComplianceSummary(findings) {
+    const container = document.getElementById("complianceSummary");
+    const summary = getComplianceSummary(findings);
+
+    if (!summary.length) {
+        container.innerHTML = `
+            <article class="compliance-card">
+                <h3>No compliance gaps yet</h3>
+                <p class="section-copy">Run a scan to map findings to frameworks such as CIS, NIST, PCI DSS, and ISO 27001.</p>
+            </article>
+        `;
+        return;
+    }
+
+    container.innerHTML = summary.map(item => `
+        <article class="compliance-card">
+            <h3>${item.framework}</h3>
+            <div class="compliance-stat">${item.count}</div>
+            <p class="section-copy">Mapped findings in the current report reference this framework.</p>
+        </article>
+    `).join("");
+}
+
+function getComplianceSummary(findings) {
+    const counts = new Map();
+
+    findings
+        .filter(item => item.severity !== "Safe")
+        .forEach(item => {
+            item.compliance.forEach(tag => {
+                counts.set(tag, (counts.get(tag) || 0) + 1);
+            });
+        });
+
+    return Array.from(counts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4)
+        .map(([framework, count]) => ({ framework, count }));
+}
+
 function drawChart(summary) {
     const canvas = document.getElementById("chart");
 
@@ -337,13 +378,19 @@ function downloadPDF() {
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    const severitySummary = summarizeSeverity(lastFindings);
+    const complianceSummary = getComplianceSummary(lastFindings);
+
     doc.setFontSize(18);
     doc.text("Cloud Security Misconfiguration Report", 20, 20);
     doc.setFontSize(11);
     doc.text(`Cloud Provider: ${lastCloud}`, 20, 32);
     doc.text(`Configuration File: ${lastFileName}`, 20, 40);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 48);
+    doc.text(`Findings Summary: Critical ${severitySummary.Critical}, High ${severitySummary.High}, Medium ${severitySummary.Medium}, Low ${severitySummary.Low}`, 20, 56);
+    doc.text(`Top Compliance Tags: ${complianceSummary.map(item => `${item.framework} (${item.count})`).join(", ") || "None"}`, 20, 64);
 
-    let y = 52;
+    let y = 78;
     lastFindings.forEach((finding, index) => {
         const lines = doc.splitTextToSize(
             `${index + 1}. ${finding.issue} | ${finding.severity} | ${finding.category}
@@ -363,6 +410,13 @@ Suggestion: ${finding.ai}`,
     });
 
     doc.save("cloud-security-report.pdf");
+}
+
+function summarizeSeverity(findings) {
+    return findings.reduce((acc, item) => {
+        acc[item.severity] = (acc[item.severity] || 0) + 1;
+        return acc;
+    }, { Critical: 0, High: 0, Medium: 0, Low: 0, Safe: 0 });
 }
 
 function exportJSON() {

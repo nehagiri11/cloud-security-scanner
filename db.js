@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const Database = require("better-sqlite3");
+const bcrypt = require("bcryptjs");
 
 const DATA_DIR = process.env.CLOUD_SECURITY_DATA_DIR
     ? process.env.CLOUD_SECURITY_DATA_DIR
@@ -21,6 +22,7 @@ const db = new Database(DB_PATH);
 initializeSchema();
 seedAdminUser();
 migrateLegacyHistory();
+ensurePasswordsHashed();
 
 function initializeSchema() {
     db.exec(`
@@ -53,7 +55,7 @@ function seedAdminUser() {
         db.prepare(`
             INSERT INTO users (username, password, name, role)
             VALUES (?, ?, ?, ?)
-        `).run("admin", "admin123", "Neha Giri", "Security Administrator");
+        `).run("admin", hashPassword("admin123"), "Neha Giri", "Security Administrator");
     }
 }
 
@@ -92,11 +94,30 @@ function migrateLegacyHistory() {
 }
 
 function findUser(username, password) {
-    return db.prepare(`
-        SELECT id, username, name, role
+    const user = db.prepare(`
+        SELECT id, username, password, name, role
         FROM users
-        WHERE username = ? AND password = ?
-    `).get(username, password);
+        WHERE username = ?
+    `).get(username);
+
+    if (!user) {
+        return null;
+    }
+
+    if (isPasswordValid(password, user.password)) {
+        if (!isHashedPassword(user.password)) {
+            updatePasswordHash(user.username, password);
+        }
+
+        return {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            role: user.role
+        };
+    }
+
+    return null;
 }
 
 function createUser(user) {
@@ -113,9 +134,56 @@ function createUser(user) {
     db.prepare(`
         INSERT INTO users (username, password, name, role)
         VALUES (?, ?, ?, ?)
-    `).run(user.username, user.password, user.name, user.role || "Security Administrator");
+    `).run(user.username, hashPassword(user.password), user.name, user.role || "Security Administrator");
 
     return getUserByUsername(user.username);
+}
+
+function ensurePasswordsHashed() {
+    const users = db.prepare(`
+        SELECT username, password
+        FROM users
+    `).all();
+
+    const update = db.prepare(`
+        UPDATE users
+        SET password = ?
+        WHERE username = ?
+    `);
+
+    const migrate = db.transaction(records => {
+        records.forEach(user => {
+            if (!isHashedPassword(user.password)) {
+                update.run(hashPassword(user.password), user.username);
+            }
+        });
+    });
+
+    migrate(users);
+}
+
+function updatePasswordHash(username, password) {
+    db.prepare(`
+        UPDATE users
+        SET password = ?
+        WHERE username = ?
+    `).run(hashPassword(password), username);
+}
+
+function hashPassword(password) {
+    return bcrypt.hashSync(password, 10);
+}
+
+function isPasswordValid(plainPassword, storedPassword) {
+    if (isHashedPassword(storedPassword)) {
+        return bcrypt.compareSync(plainPassword, storedPassword);
+    }
+
+    return plainPassword === storedPassword;
+}
+
+function isHashedPassword(value) {
+    return typeof value === "string" && /^\$2[aby]\$\d{2}\$/.test(value);
 }
 
 function getUserByUsername(username) {

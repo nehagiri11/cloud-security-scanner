@@ -63,6 +63,21 @@
                         <li>Cloud-specific checks for AWS, Azure, and GCP</li>
                     </ul>
                 </div>
+
+                <div class="upload-guide">
+                    <h3>Upload Instructions</h3>
+                    <p class="section-copy">Upload structured cloud configuration data in JSON or YAML format. Good sources include exported provider settings, IaC templates, Terraform-style config snapshots, deployment manifests, or policy documents.</p>
+                    <div class="guide-tags">
+                        <span class="mini-badge neutral-badge">Supported: JSON</span>
+                        <span class="mini-badge neutral-badge">Supported: YAML</span>
+                        <span class="mini-badge neutral-badge">Sources: AWS / Azure / GCP</span>
+                    </div>
+                    <ul class="guide-list">
+                        <li>Include fields like public access, firewall rules, encryption, MFA, logging, backups, and password policy.</li>
+                        <li>Export settings from cloud dashboards or use infrastructure-as-code files for the best scan accuracy.</li>
+                        <li>Use the sample files if you need a quick demonstration dataset.</li>
+                    </ul>
+                </div>
             </section>
 
             <section class="panel summary-panel">
@@ -117,6 +132,17 @@
                     <p class="section-copy">The system groups findings into immediate, next, and planned actions.</p>
                 </div>
                 <div id="recommendationList" class="recommendation-list"></div>
+            </section>
+
+            <section class="panel compliance-panel">
+                <div class="results-header">
+                    <div>
+                        <p class="eyebrow">Compliance Snapshot</p>
+                        <h2>Framework Coverage</h2>
+                    </div>
+                    <p class="section-copy">Shows which security frameworks are most affected by the current findings.</p>
+                </div>
+                <div id="complianceSummary" class="compliance-summary"></div>
             </section>
 
             <section class="panel history-panel">

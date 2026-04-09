@@ -61,11 +61,16 @@
 
                 <label class="field">
                     <span>Password</span>
-                    <input type="password" id="registerPassword" placeholder="Minimum 6 characters" required>
+                    <input type="password" id="registerPassword" placeholder="Minimum 8 characters" required>
+                </label>
+
+                <label class="field">
+                    <span>Confirm Password</span>
+                    <input type="password" id="registerConfirmPassword" placeholder="Re-enter password" required>
                 </label>
 
                 <button type="submit">Register and Continue</button>
-                <p id="registerMessage" class="helper-text">New admins are created in the SQLite database.</p>
+                <p id="registerMessage" class="helper-text">New admins are created securely in the SQLite database with hashed passwords.</p>
             </form>
         </section>
     </main>

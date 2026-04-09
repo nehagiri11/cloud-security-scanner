@@ -78,8 +78,8 @@ async function handleApi(req, res) {
             return;
         }
 
-        if (password.length < 6) {
-            sendJson(res, 400, { error: "Password must be at least 6 characters long" });
+        if (password.length < 8) {
+            sendJson(res, 400, { error: "Password must be at least 8 characters long" });
             return;
         }
 
@@ -178,7 +178,8 @@ async function handleApi(req, res) {
 }
 
 function serveStatic(req, res) {
-    const requestPath = req.url === "/" ? "/index.html" : req.url.split("?")[0];
+    const cleanPath = req.url.split("?")[0];
+    const requestPath = cleanPath === "/" || cleanPath === "" ? "/index.html" : cleanPath;
     const safePath = path.normalize(requestPath).replace(/^(\.\.[/\\])+/, "");
     let filePath = path.join(PUBLIC_DIR, safePath);
 
@@ -193,6 +194,16 @@ function serveStatic(req, res) {
             filePath = fallbackPath;
         } else {
             sendText(res, 404, "Not Found", "text/plain");
+            return;
+        }
+    }
+
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+        const indexPath = path.join(filePath, "index.html");
+        if (fs.existsSync(indexPath) && fs.statSync(indexPath).isFile()) {
+            filePath = indexPath;
+        } else {
+            sendText(res, 403, "Forbidden", "text/plain");
             return;
         }
     }

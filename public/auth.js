@@ -80,7 +80,18 @@ document.getElementById("registerForm").addEventListener("submit", async event =
     const name = document.getElementById("registerName").value.trim();
     const username = document.getElementById("registerUsername").value.trim();
     const password = document.getElementById("registerPassword").value.trim();
+    const confirmPassword = document.getElementById("registerConfirmPassword").value.trim();
     const message = document.getElementById("registerMessage");
+
+    if (password.length < 8) {
+        message.textContent = "Password must be at least 8 characters long.";
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        message.textContent = "Password and confirm password must match.";
+        return;
+    }
 
     message.textContent = "Creating admin account...";
 
