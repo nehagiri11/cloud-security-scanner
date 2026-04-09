@@ -1,0 +1,28 @@
+{
+  "public_access": false,
+  "block_public_access": true,
+  "role": "owner",
+  "encryption": true,
+  "kms_rotation_enabled": true,
+  "mfa_enabled": false,
+  "logging_enabled": true,
+  "alerting_enabled": false,
+  "flow_logs_enabled": true,
+  "backup_enabled": true,
+  "secret_rotation_enabled": true,
+  "defender_enabled": false,
+  "key_vault_public_access": true,
+  "storage_secure_transfer_required": false,
+  "nsg_default_allow": false,
+  "password_policy": {
+    "min_length": 10,
+    "require_symbols": false
+  },
+  "firewall": [
+    {
+      "port": 443,
+      "cidr": "10.1.0.0/24",
+      "tls": true
+    }
+  ]
+}

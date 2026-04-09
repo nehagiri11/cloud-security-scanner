@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Security Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Admin Dashboard</p>
+                <h1>Multi-Cloud Misconfiguration Detection System</h1>
+            </div>
+            <div class="user-box">
+                <div>
+                    <strong id="userName">Admin</strong>
+                    <p id="userRole">Security Administrator</p>
+                </div>
+                <button id="logoutBtn" class="ghost">Logout</button>
+            </div>
+        </header>
+
+        <main class="layout">
+            <section class="panel controls-panel">
+                <h2>Upload and Scan</h2>
+                <p class="section-copy">Select a cloud provider, upload a configuration, and submit it to the backend rule engine.</p>
+
+                <div class="control-grid">
+                    <label class="field">
+                        <span>Cloud Provider</span>
+                        <select id="cloudType">
+                            <option value="AWS">AWS</option>
+                            <option value="Azure">Azure</option>
+                            <option value="GCP">GCP</option>
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span>Configuration File</span>
+                        <input type="file" id="fileInput" accept=".json,.yaml,.yml">
+                    </label>
+                </div>
+
+                <div class="button-row">
+                    <button id="scanBtn" type="button">Scan Configuration</button>
+                    <button id="sampleBtn" type="button" class="secondary">Load Sample</button>
+                    <button id="pdfBtn" type="button" class="ghost">Download PDF</button>
+                    <button id="jsonBtn" type="button" class="ghost">Export JSON</button>
+                </div>
+
+                <div class="sample-box">
+                    <h3>Extended Rule Coverage</h3>
+                    <ul>
+                        <li>Storage exposure and encryption</li>
+                        <li>Identity privilege and MFA checks</li>
+                        <li>Logging, alerting, and compliance controls</li>
+                        <li>Firewall and database exposure analysis</li>
+                        <li>Cloud-specific checks for AWS, Azure, and GCP</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="panel summary-panel">
+                <div class="summary-header">
+                    <div>
+                        <p class="eyebrow">Security Posture</p>
+                        <h2 id="riskHeadline">No scan yet</h2>
+                    </div>
+                    <div id="riskBadge" class="badge neutral">Waiting</div>
+                </div>
+
+                <div class="stat-grid">
+                    <article class="stat-card">
+                        <span>Total Findings</span>
+                        <strong id="totalFindings">0</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span>Critical</span>
+                        <strong id="criticalCount">0</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span>High</span>
+                        <strong id="highCount">0</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span>Medium</span>
+                        <strong id="mediumCount">0</strong>
+                    </article>
+                </div>
+
+                <div class="score-card">
+                    <div>
+                        <span class="score-label">Risk Score</span>
+                        <strong id="riskScore">0%</strong>
+                    </div>
+                    <p id="scoreDescription">Run a scan to evaluate the uploaded configuration.</p>
+                </div>
+
+                <div class="chart-wrap">
+                    <canvas id="chart" height="220"></canvas>
+                </div>
+            </section>
+        </main>
+
+        <section class="insight-grid">
+            <section class="panel insights-panel">
+                <div class="results-header">
+                    <div>
+                        <p class="eyebrow">Prioritized Action</p>
+                        <h2>Remediation Roadmap</h2>
+                    </div>
+                    <p class="section-copy">The system groups findings into immediate, next, and planned actions.</p>
+                </div>
+                <div id="recommendationList" class="recommendation-list"></div>
+            </section>
+
+            <section class="panel history-panel">
+                <div class="results-header">
+                    <div>
+                        <p class="eyebrow">Server-Side Activity</p>
+                        <h2>Recent Scan History</h2>
+                    </div>
+                    <p class="section-copy">This history is stored by the Node.js backend.</p>
+                </div>
+                <div id="historyList" class="history-list"></div>
+            </section>
+        </section>
+
+        <section class="panel results-panel">
+            <div class="results-header">
+                <div>
+                    <p class="eyebrow">Detailed Findings</p>
+                    <h2>Misconfiguration Report</h2>
+                </div>
+                <p id="scanMeta" class="section-copy">No configuration has been scanned yet.</p>
+            </div>
+
+            <div class="filter-bar">
+                <label class="field small-field">
+                    <span>Severity Filter</span>
+                    <select id="severityFilter">
+                        <option value="All">All</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                        <option value="Safe">Safe</option>
+                    </select>
+                </label>
+                <label class="field small-field">
+                    <span>Search Findings</span>
+                    <input type="text" id="searchInput" placeholder="Search by issue, category, or compliance tag">
+                </label>
+            </div>
+
+            <div class="table-wrap">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>Issue</th>
+                            <th>Severity</th>
+                            <th>Category</th>
+                            <th>Compliance</th>
+                            <th>Fix</th>
+                            <th>AI Suggestion</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="/dashboard.js"></script>
+</body>
+</html>

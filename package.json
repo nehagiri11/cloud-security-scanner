@@ -1,0 +1,12 @@
+{
+  "name": "cloud-security-scanner",
+  "version": "1.0.0",
+  "description": "Full-stack multi-cloud security and misconfiguration detection system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0"
+  }
+}

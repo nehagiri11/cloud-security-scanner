@@ -1,0 +1,66 @@
+[
+  {
+    "id": "c31ae452e7535c6d",
+    "username": "admin",
+    "fileName": "aws-safe.yaml",
+    "cloud": "AWS",
+    "riskScore": 0,
+    "summary": {
+      "Critical": 0,
+      "High": 0,
+      "Medium": 0,
+      "Low": 0,
+      "Safe": 1
+    },
+    "findingsCount": 0,
+    "scannedAt": "2026-04-08T16:38:14.955Z"
+  },
+  {
+    "id": "e42ed821d72efbd5",
+    "username": "admin",
+    "fileName": "sample.yaml",
+    "cloud": "AWS",
+    "riskScore": 100,
+    "summary": {
+      "Critical": 4,
+      "High": 10,
+      "Medium": 6,
+      "Low": 1,
+      "Safe": 0
+    },
+    "findingsCount": 21,
+    "scannedAt": "2026-04-08T16:37:50.276Z"
+  },
+  {
+    "id": "092d6e28950235fa",
+    "username": "admin",
+    "fileName": "aws-critical.yaml",
+    "cloud": "AWS",
+    "riskScore": 100,
+    "summary": {
+      "Critical": 4,
+      "High": 10,
+      "Medium": 6,
+      "Low": 1,
+      "Safe": 0
+    },
+    "findingsCount": 21,
+    "scannedAt": "2026-04-08T16:37:48.108Z"
+  },
+  {
+    "id": "f2c6191c251c11b5",
+    "username": "admin",
+    "fileName": "aws-critical.yaml",
+    "cloud": "AWS",
+    "riskScore": 100,
+    "summary": {
+      "Critical": 4,
+      "High": 10,
+      "Medium": 6,
+      "Low": 1,
+      "Safe": 0
+    },
+    "findingsCount": 21,
+    "scannedAt": "2026-04-08T16:35:24.854Z"
+  }
+]

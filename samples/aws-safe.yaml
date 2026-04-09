@@ -1,0 +1,25 @@
+public_access: false
+block_public_access: true
+role: viewer
+encryption: true
+kms_rotation_enabled: true
+mfa_enabled: true
+root_user_active: false
+logging_enabled: true
+alerting_enabled: true
+flow_logs_enabled: true
+backup_enabled: true
+secret_rotation_enabled: true
+versioning_enabled: true
+cloudtrail_enabled: true
+imdsv2_required: true
+rds_public_access: false
+
+password_policy:
+  min_length: 14
+  require_symbols: true
+
+firewall:
+  - port: 443
+    cidr: "10.0.0.0/24"
+    tls: true

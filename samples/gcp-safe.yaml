@@ -1,0 +1,25 @@
+public_access: false
+block_public_access: true
+role: analyst
+encryption: true
+kms_rotation_enabled: true
+mfa_enabled: true
+root_user_active: false
+logging_enabled: true
+alerting_enabled: true
+flow_logs_enabled: true
+backup_enabled: true
+secret_rotation_enabled: true
+audit_config: true
+os_login_required: true
+service_account_key_exposed: false
+sql_public_ip: false
+
+password_policy:
+  min_length: 16
+  require_symbols: true
+
+firewall:
+  - port: 443
+    cidr: "172.16.1.0/24"
+    tls: true

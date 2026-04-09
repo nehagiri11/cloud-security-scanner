@@ -1,0 +1,14 @@
+public_access: true
+role: admin
+encryption: false
+mfa_enabled: false
+logging_enabled: false
+
+password_policy:
+  min_length: 6
+
+firewall:
+  - port: 22
+    cidr: "0.0.0.0/0"
+  - port: 3389
+    cidr: "0.0.0.0/0"

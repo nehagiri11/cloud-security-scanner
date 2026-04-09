@@ -1,0 +1,37 @@
+{
+  "public_access": true,
+  "block_public_access": false,
+  "role": "root",
+  "encryption": false,
+  "kms_rotation_enabled": false,
+  "mfa_enabled": false,
+  "root_user_active": true,
+  "logging_enabled": false,
+  "alerting_enabled": false,
+  "flow_logs_enabled": false,
+  "backup_enabled": false,
+  "secret_rotation_enabled": false,
+  "audit_config": false,
+  "os_login_required": false,
+  "service_account_key_exposed": true,
+  "sql_public_ip": true,
+  "password_policy": {
+    "min_length": 8,
+    "require_symbols": false
+  },
+  "firewall": [
+    {
+      "port": 22,
+      "cidr": "0.0.0.0/0"
+    },
+    {
+      "port": 5432,
+      "cidr": "0.0.0.0/0"
+    },
+    {
+      "port": 443,
+      "cidr": "0.0.0.0/0",
+      "tls": false
+    }
+  ]
+}

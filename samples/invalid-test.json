@@ -1,0 +1,5 @@
+{
+  "public_access": true,
+  "role": "admin",
+  "encryption": false,
+  "mfa_enabled": false,

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Security Scanner Login</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="auth-body">
+    <main class="auth-shell">
+        <section class="auth-hero">
+            <p class="eyebrow">Full-Stack Security Project</p>
+            <h1>Cloud Security Administration Portal</h1>
+            <p class="hero-copy">
+                Authenticate as an administrator, upload cloud configurations, and review
+                security findings from a backend-powered multi-cloud scanner.
+            </p>
+            <div class="hero-feature-list">
+                <span>Node.js Backend</span>
+                <span>Admin Dashboard</span>
+                <span>AWS, Azure, GCP Rules</span>
+            </div>
+        </section>
+
+        <section class="auth-card">
+            <div class="auth-header">
+                <h2>Administrator Access</h2>
+                <p>Login with an existing admin account or register a new one.</p>
+            </div>
+
+            <div class="auth-tab-row">
+                <button id="showLoginBtn" class="tab-btn active" type="button">Login</button>
+                <button id="showRegisterBtn" class="tab-btn" type="button">Register</button>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <label class="field">
+                    <span>Username</span>
+                    <input type="text" id="loginUsername" placeholder="Enter username" required>
+                </label>
+
+                <label class="field">
+                    <span>Password</span>
+                    <input type="password" id="loginPassword" placeholder="Enter password" required>
+                </label>
+
+                <button type="submit">Login to Dashboard</button>
+                <p id="loginMessage" class="helper-text">Enter your administrator credentials to continue.</p>
+            </form>
+
+            <form id="registerForm" class="auth-form hidden">
+                <label class="field">
+                    <span>Full Name</span>
+                    <input type="text" id="registerName" placeholder="Enter admin name" required>
+                </label>
+
+                <label class="field">
+                    <span>Username</span>
+                    <input type="text" id="registerUsername" placeholder="Choose username" required>
+                </label>
+
+                <label class="field">
+                    <span>Password</span>
+                    <input type="password" id="registerPassword" placeholder="Minimum 6 characters" required>
+                </label>
+
+                <button type="submit">Register and Continue</button>
+                <p id="registerMessage" class="helper-text">New admins are created in the SQLite database.</p>
+            </form>
+        </section>
+    </main>
+
+    <script src="/auth.js"></script>
+</body>
+</html>

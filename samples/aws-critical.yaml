@@ -1,0 +1,29 @@
+public_access: true
+block_public_access: false
+role: admin
+encryption: false
+kms_rotation_enabled: false
+mfa_enabled: false
+root_user_active: true
+logging_enabled: false
+alerting_enabled: false
+flow_logs_enabled: false
+backup_enabled: false
+secret_rotation_enabled: false
+versioning_enabled: false
+cloudtrail_enabled: false
+imdsv2_required: false
+rds_public_access: true
+
+password_policy:
+  min_length: 6
+  require_symbols: false
+
+firewall:
+  - port: 22
+    cidr: "0.0.0.0/0"
+  - port: 3389
+    cidr: "0.0.0.0/0"
+  - port: 443
+    cidr: "0.0.0.0/0"
+    tls: false
