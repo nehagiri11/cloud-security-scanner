@@ -12,9 +12,10 @@
 <body>
     <div class="page-shell">
         <header class="topbar">
-            <div>
+            <div class="topbar-copy">
                 <p class="eyebrow">Admin Dashboard</p>
                 <h1>Multi-Cloud Misconfiguration Detection System</h1>
+                <p class="section-copy topbar-subtitle">Analyze uploaded cloud configurations or run an optional live AWS posture scan from one managed console.</p>
             </div>
             <div class="user-box">
                 <div>
@@ -52,12 +53,15 @@
                         </label>
                     </div>
 
-                    <div class="button-row">
-                        <button id="scanBtn" type="button">Scan Configuration</button>
-                        <button id="sampleBtn" type="button" class="secondary">Load Sample</button>
-                        <button id="pdfBtn" type="button" class="ghost">Download PDF</button>
-                        <button id="jsonBtn" type="button" class="ghost">Export JSON</button>
-                    </div>
+                <div class="button-row">
+                    <button id="scanBtn" type="button">Scan Configuration</button>
+                    <button id="sampleBtn" type="button" class="secondary">Load Sample</button>
+                </div>
+
+                <div class="button-row utility-row">
+                    <button id="pdfBtn" type="button" class="ghost">Download PDF</button>
+                    <button id="jsonBtn" type="button" class="ghost">Export JSON</button>
+                </div>
                 </div>
 
                 <div class="support-grid">
@@ -122,7 +126,7 @@
                             <button id="awsLiveScanBtn" type="button">Run Live AWS Scan</button>
                         </div>
 
-                        <p id="awsLiveScanMessage" class="helper-text">You can leave credentials blank if the backend already has AWS credentials configured in the environment.</p>
+                        <p id="awsLiveScanMessage" class="helper-text">Use IAM credentials with read-only permissions. You can leave the fields blank only if the backend already has AWS credentials configured in Render environment variables.</p>
                     </div>
                 </div>
             </section>
@@ -193,7 +197,7 @@
                 <div id="complianceSummary" class="compliance-summary"></div>
             </section>
 
-            <section class="panel history-panel">
+            <section class="panel history-panel full-width-panel">
                 <div class="results-header">
                     <div>
                         <p class="eyebrow">Server-Side Activity</p>
@@ -211,7 +215,9 @@
                     <p class="eyebrow">Detailed Findings</p>
                     <h2>Misconfiguration Report</h2>
                 </div>
-                <p id="scanMeta" class="section-copy">No configuration has been scanned yet.</p>
+                <div class="scan-meta-box">
+                    <p id="scanMeta" class="section-copy">No configuration has been scanned yet.</p>
+                </div>
             </div>
 
             <div class="filter-bar">
