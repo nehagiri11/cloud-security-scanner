@@ -598,6 +598,43 @@ button.ghost {
     max-height: 180px;
 }
 
+.intel-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.intel-card {
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 246, 255, 0.9));
+    box-shadow: var(--shadow-soft);
+}
+
+.intel-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.intel-card strong {
+    display: block;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+    color: #17345d;
+}
+
+.intel-card .section-copy {
+    margin-bottom: 0;
+    font-size: 0.94rem;
+}
+
 .filter-bar {
     flex-wrap: wrap;
     margin-top: 14px;
@@ -688,6 +725,7 @@ tbody tr:hover {
     .insight-grid,
     .support-grid,
     .control-grid,
+    .intel-rail,
     .stat-grid,
     .topbar,
     .block-header,

@@ -171,6 +171,24 @@
                     <div id="chartEmptyState" class="chart-empty-state">Run a scan to generate the findings chart.</div>
                     <canvas id="chart" height="220"></canvas>
                 </div>
+
+                <div class="intel-rail">
+                    <article class="intel-card">
+                        <span class="intel-label">Scan Mode</span>
+                        <strong id="scanModeValue">Waiting for scan</strong>
+                        <p id="scanModeHint" class="section-copy">Upload a configuration file or run a live AWS posture check.</p>
+                    </article>
+                    <article class="intel-card">
+                        <span class="intel-label">Top Risk Area</span>
+                        <strong id="topCategoryValue">No findings yet</strong>
+                        <p id="topCategoryHint" class="section-copy">The dashboard will highlight the most affected security domain here.</p>
+                    </article>
+                    <article class="intel-card">
+                        <span class="intel-label">Coverage</span>
+                        <strong id="coverageValue">AWS, Azure, GCP</strong>
+                        <p class="section-copy">Unified rule coverage across storage, identity, monitoring, network, and resilience controls.</p>
+                    </article>
+                </div>
             </section>
         </main>
 

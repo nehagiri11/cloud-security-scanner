@@ -219,6 +219,39 @@ function updateSummary(result) {
     document.getElementById("highCount").textContent = summary.High || 0;
     document.getElementById("mediumCount").textContent = summary.Medium || 0;
     document.getElementById("scanMeta").textContent = metaLine;
+    updateIntelRail(result);
+}
+
+function updateIntelRail(result) {
+    const actionable = result.findings.filter(item => item.severity !== "Safe");
+    const categoryCounts = actionable.reduce((acc, item) => {
+        acc[item.category] = (acc[item.category] || 0) + 1;
+        return acc;
+    }, {});
+    const topCategory = Object.entries(categoryCounts)
+        .sort((a, b) => b[1] - a[1])[0];
+
+    const scanModeValue = document.getElementById("scanModeValue");
+    const scanModeHint = document.getElementById("scanModeHint");
+    const topCategoryValue = document.getElementById("topCategoryValue");
+    const topCategoryHint = document.getElementById("topCategoryHint");
+
+    if (result.metadata?.liveScan) {
+        scanModeValue.textContent = "Live AWS posture scan";
+        scanModeHint.textContent = `Connected account ${result.metadata.accountId || "unknown"} in ${result.metadata.region || "configured region"}.`;
+    } else {
+        scanModeValue.textContent = `${result.cloud} file assessment`;
+        scanModeHint.textContent = `Analyzed ${result.fileName} through the backend rule engine.`;
+    }
+
+    if (!topCategory) {
+        topCategoryValue.textContent = "No active gaps";
+        topCategoryHint.textContent = "The current scan did not trigger any major controls in the active rule set.";
+        return;
+    }
+
+    topCategoryValue.textContent = `${topCategory[0]} (${topCategory[1]})`;
+    topCategoryHint.textContent = `Most findings in this report belong to ${topCategory[0].toLowerCase()} controls and should be prioritized in remediation.`;
 }
 
 function getPostureLabel(score, hasRealFindings) {
