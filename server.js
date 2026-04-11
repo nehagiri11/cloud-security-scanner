@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { scanConfiguration, calculateRiskScore, summarizeFindings } = require("./scanner");
-const { findUser, createUser, addScanHistory, getScanHistory } = require("./db");
+const { connectDatabase, findUser, createUser, addScanHistory, getScanHistory } = require("./db");
 const { scanAwsAccount } = require("./awsScanner");
 
 const PORT = process.env.PORT || 3000;
@@ -36,19 +36,15 @@ const server = http.createServer(async (req, res) => {
     }
 });
 
-server.listen(PORT, () => {
-    console.log(`Cloud Security Scanner running at http://localhost:${PORT}`);
-});
-
 async function handleApi(req, res) {
     if (req.method === "GET" && req.url === "/api/health") {
-        sendJson(res, 200, { status: "ok", service: "cloud-security-scanner" });
+        sendJson(res, 200, { status: "ok", service: "cloud-security-scanner", database: "mongodb" });
         return;
     }
 
     if (req.method === "POST" && req.url === "/api/login") {
         const body = await readJsonBody(req);
-        const user = findUser(body.username, body.password);
+        const user = await findUser(body.username, body.password);
 
         if (!user) {
             sendJson(res, 401, { error: "Invalid username or password" });
@@ -85,7 +81,7 @@ async function handleApi(req, res) {
         }
 
         try {
-            const user = createUser({
+            const user = await createUser({
                 name,
                 username,
                 password,
@@ -135,7 +131,7 @@ async function handleApi(req, res) {
             return;
         }
 
-        const userHistory = getScanHistory(session.username, 10);
+        const userHistory = await getScanHistory(session.username, 10);
         sendJson(res, 200, { items: userHistory });
         return;
     }
@@ -163,7 +159,7 @@ async function handleApi(req, res) {
             scannedAt: new Date().toISOString()
         };
 
-        addScanHistory(entry);
+        await addScanHistory(entry);
 
         sendJson(res, 200, {
             fileName,
@@ -196,7 +192,7 @@ async function handleApi(req, res) {
             const summary = summarizeFindings(awsResult.findings);
             const fileName = `AWS live scan (${awsResult.accountId})`;
 
-            addScanHistory({
+            await addScanHistory({
                 username: session.username,
                 fileName,
                 cloud: "AWS",
@@ -222,7 +218,7 @@ async function handleApi(req, res) {
             });
         } catch (error) {
             sendJson(res, 400, {
-                error: error.message || "AWS live scan failed"
+                error: formatAwsLiveScanError(error)
             });
         }
         return;
@@ -331,3 +327,32 @@ function sendText(res, statusCode, payload, contentType) {
     });
     res.end(payload);
 }
+
+function formatAwsLiveScanError(error) {
+    const message = String(error?.message || "AWS live scan failed");
+
+    if (/credential|access key|secret access/i.test(message)) {
+        return "AWS live scan failed: provide valid AWS credentials in the form or configure AWS credentials in Render environment variables.";
+    }
+
+    if (/security token|token included in the request is invalid|signature/i.test(message)) {
+        return "AWS live scan failed: the AWS credentials or session token are invalid or expired.";
+    }
+
+    if (/not authorized|accessdenied|unauthorized/i.test(message)) {
+        return "AWS live scan failed: the AWS user or role does not have enough read permissions for the required AWS APIs.";
+    }
+
+    return `AWS live scan failed: ${message}`;
+}
+
+connectDatabase()
+    .then(() => {
+        server.listen(PORT, () => {
+            console.log(`Cloud Security Scanner running at http://localhost:${PORT}`);
+        });
+    })
+    .catch(error => {
+        console.error(`Failed to connect to MongoDB: ${error.message}`);
+        process.exit(1);
+    });
